@@ -3721,6 +3721,11 @@ static class InvokeExpr implements Expr{
 			emitProto(context,objx,gen);
 			}
 
+		else if (fexpr instanceof VarExpr) {
+			Var v = ((VarExpr) fexpr).var;
+			gen.visitLineNumber(line, gen.mark());
+			emitArgsAndCall(0, context, objx, gen);
+		}
 		else
 			{
 			fexpr.emit(C.EXPRESSION, objx, gen);
@@ -3802,9 +3807,17 @@ static class InvokeExpr implements Expr{
 			ObjMethod method = (ObjMethod) METHOD.deref();
 			method.emitClearThis(gen);
 			}
-
-		gen.invokeInterface(IFN_TYPE, new Method("invoke", OBJECT_TYPE, ARG_TYPES[Math.min(MAX_POSITIONAL_ARITY + 1,
+		if (!isProtocol && fexpr instanceof VarExpr) {
+			Var v = ((VarExpr) fexpr).var;
+			gen.invokeDynamic("invoke", Type.getMethodDescriptor(OBJECT_TYPE, ARG_TYPES[Math.min(MAX_POSITIONAL_ARITY + 1,
+		                                                                                   args.count())]),
+					new Handle(H_INVOKESTATIC, "clojure/lang/IndySupport", "varInvoke", 
+							"(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/invoke/CallSite;", false),
+					v.ns.name.toString(), v.sym.toString());
+		} else {
+			gen.invokeInterface(IFN_TYPE, new Method("invoke", OBJECT_TYPE, ARG_TYPES[Math.min(MAX_POSITIONAL_ARITY + 1,
 		                                                                                   args.count())]));
+		}
 	}
 
 	public boolean hasJavaClass() {

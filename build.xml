@@ -28,7 +28,7 @@
   <property name="clojure_jar" location="clojure-${clojure.version.label}.jar"/>
   <property name="clojure_noversion_jar" location="clojure.jar"/>
 
-  <property name="directlinking" value="true"/>
+  <property name="directlinking" value="false"/>
 
   <target name="init" depends="clean">
     <tstamp/>
